@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+  
+    "lib": [
+      "es2015",
+      "es5",
+      "dom"
+    ],
+    "resolveJsonModule":true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "preserveSymlinks": true,
+    "preserveWatchOutput": true,
+    "pretty": false,
+    "sourceMap": true,
+    "target": "es5"
+  },
+  "include": ["src","src/abi.json"]
+}
