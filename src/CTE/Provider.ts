@@ -52,6 +52,7 @@ export interface SignedTransaction{
 }
  
 import { BaseProvider, Event } from "@ethersproject/providers/src.ts/base-provider";
+import { ExternalProvider } from "@ethersproject/providers";
 
 
 const errorGas = [ "call", "estimateGas" ];
@@ -194,7 +195,7 @@ export class BtySigner extends Signer implements TypedDataSigner {
     _index: number;
     _address: string;
 
-    constructor(constructorGuard: any, provider: BtyProvider, addressOrIndex?: string | number) {
+    constructor(constructorGuard: any, provider: BtyProvider , addressOrIndex?: string | number) {
         super();
         if (constructorGuard !== _constructorGuard) {
             throw new Error("do not call the BtySigner constructor directly; use provider.getSigner");
