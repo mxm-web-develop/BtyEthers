@@ -1,42 +1,105 @@
 // import detectEthereumProvider from '@metamask/detect-provider';
 // import MetaMaskOnboarding from '@metamask/onboarding';
-import { BtyProvider,BtySigner } from './CTE/Provider'
+import { BtyProvider,BtySigner } from './BtyEthers/Provider'
+import {Contract} from './BtyEthers/Contract'
+// import BtyEthers from './BtyEthers'; 
+import MetaMaskOnboarding from '@metamask/onboarding';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { ethers,BigNumber,Contract,utils,ContractFactory,Wallet } from 'ethers';
+import { ethers,BigNumber,utils,ContractFactory,Wallet } from 'ethers';
 import abi from './abi.json'
+import erc20 from './erc20.json'
 import { sign } from 'crypto';
-import { createLoginBox } from './CTE/View';
+import { createLoginBox } from './BtyEthers/View';
+import BtyEthers from './BtyEthers';
+import './style.css'
 //eth_estimateGas
 // console.log(abi);
 
 
 
 (async function(){
+  const web3 = new BtyEthers("http://121.52.224.82:8546")
+  web3.connect('metamask')
   // const onboarding = new MetaMaskOnboarding();
   // const metamaskProvider = await detectEthereumProvider();
   // metamaskProvider.
   const app = document.getElementById('app')
   app.innerHTML = `
-    <div>
+    <div class=" text-red-500  py-10">
       this is my Web3 Tools
-    </div>
-    <button
+      </div>
   `
-  const metamask = (window as any).ethereum
-  const provider =  new BtyProvider("http://121.52.224.82:8546")
-  // let account =[]
+  const buildButton = (text:string,twClass?:string)=>{
+      let el = document.createElement('button')
+      el.innerText = text
+      twClass?
+        el.setAttribute('class',twClass):''
+      return el
+  }
+  const btnStyle = ' py-3 px-2 shadow m-2'
+  const sendBtn = buildButton('click to send transaction',btnStyle)
+  const logoutBtn = buildButton('logout web3 account',btnStyle)
+  app.append(sendBtn,logoutBtn)
+
+  // const logoutBtn = document.createElement('button')
+
+  
+
+  sendBtn.onclick = ()=>{
+    web3.send({
+      to:'0x89c893e850cff3d531f4c477112F052a536E4843',value:'10000000000'
+    })
+  }
+
+  
+
+  // const tx =  await web3._buildTransaction({to:'0x89c893e850cff3d531f4c477112F052a536E4843',value:'200000'})
+  // console.log();
+
+  
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // const metamask = (window as any).ethereum
+  // const provider =  new BtyProvider("http://121.52.224.82:8546","metamask")
+//0x0c680c2fb0c5f2c4fcaff64e368dfc7192b73b04
+  // const myContract = new Contract('0x0c680c2fb0c5f2c4fcaff64e368dfc7192b73b04',erc20,provider)
+  // console.log(typeof myContract.functions);
+
+  // let account =[''] 
   // console.log(provider);
   // const chainId = await provider.getNetwork()
   //metamask插件已经安装
-  const metamaskConnect = metamask.isConnected()
+//   const metamaskConnect = metamask.isConnected()
+// console.log(provider);
 
-  if(metamaskConnect){
-    if(!metamask.selectedAddress){
-      // account =   await metamask.request({ method: 'eth_requestAccounts' })
-      // const signer =  provider.getSigner(account[0])
-      // console.log(signer);
-      
-    }else{
+  // if(metamaskConnect){
+  //   if(!metamask.selectedAddress){
+  //     account =   await metamask.request({ method: 'eth_requestAccounts' })
+  //     const signer =  provider.getSigner(account[0])
+  //   }else{
       // const signer = await provider.getSigner(metamask.selectedAddress)
       // const connect = await signer.connectUnchecked()
       // const sign = await signer.signTransaction('123')
@@ -44,27 +107,39 @@ import { createLoginBox } from './CTE/View';
       // createLoginBox()
       // const addr = await signer.getAddress()
       // console.log(addr);
-  
-   
+      // const onboarding = new MetaMaskOnboarding();
+      // onboarding.stopOnboarding()
       // metamask.request({ method: 'eth_requestAccounts' })
       // const signer = await provider.getSigner(metamask.selectedAddress)
       // const balance = await provider.getBalance(signer._address)
-  
+      
+      // console.log(      MetaMaskOnboarding.isMetaMaskInstalled());
+      
+
+      // const myFunctions = myContract.functions
+      // Object.entries(myFunctions)
+      // const c= await myContract.connect(provider)
+      // const blac = await c['transfer']('0x89c893e850cff3d531f4c477112F052a536E4843',1444444)
+      // console.log(BigNumber.from(blac).toNumber());
+      
+      
     
-      const {rawTx,sha256Hash} = await provider.createRawTransaction({   
-        from: metamask.selectedAddress,
-        to: "0xa9D9a61bd8469E8106f7Ea8B674006dA7f1F3C30",
-        gas:(6*1e5).toString(),
-        gasPrice:'1',
-        value:(60*1e18).toString()
-      })
+      // const {rawTx,sha256Hash} = await provider.createRawTransaction({   
+      //   from: metamask.selectedAddress,
+      //   to: "0xa9D9a61bd8469E8106f7Ea8B674006dA7f1F3C30",
+      //   gas:(6*1e5).toString(),
+      //   gasPrice:'1',
+      //   value:(60*1e18).toString()
+      // })
       // console.log(sha256Hash,rawTx);
-      const getAcc= await metamask.request({ method: 'eth_requestAccounts' })
-      const signature = await metamask.request({
-        method: "eth_sign",
-        params: [metamask.selectedAddress, sha256Hash],
-      });
-      console.log(signature);
+      // const getAcc= await metamask.request({ method: 'eth_requestAccounts' })
+      // console.log(getAcc);
+      
+      // const signature = await metamask.request({
+      //   method: "eth_sign",
+      //   params: [metamask.selectedAddress, sha256Hash],
+      // });
+      // console.log(signature);
       
       // const send = await provider.sendSignTransaction({
       //   rawTx:rawTx,
@@ -73,7 +148,7 @@ import { createLoginBox } from './CTE/View';
   
   
   
-    }
+    // }
 
 
 
@@ -83,6 +158,14 @@ import { createLoginBox } from './CTE/View';
     
     //rawTx 
     //0x0a05636f696e73120a18010a061080f882ad1620a08d0630b6d2a2eed7dc89c5093a2a3078613964396136316264383436396538313036663765613862363734303036646137663166336333305816
+
+
+
+
+
+
+
+
 
 
 
@@ -131,7 +214,7 @@ import { createLoginBox } from './CTE/View';
 
     // const CF =  ContractFactory.getContractAddress({from:'0x5de40864db18e77e298b4131e59e7d3e862cca47'})
 
-  }
+  //}
   
  
 

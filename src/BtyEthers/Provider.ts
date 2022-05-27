@@ -14,8 +14,8 @@ import { AccessList, accessListify, AccessListish } from "@ethersproject/transac
 import { ConnectionInfo, fetchJson, poll } from "@ethersproject/web";
 
 import { Logger } from "@ethersproject/logger";
-// import { version } from "./_version";
-const logger = new Logger('6.5.0');
+import { version } from "./Version";
+const logger = new Logger(version);
 export interface SignedTransaction{
     rawTx:string
    signature:string
@@ -26,7 +26,7 @@ export interface SignedTransaction{
      value:string;
      gas?:string;
      gasPrice?:string;
-     data?:string,
+     data?:any,
      [k:string]:any
  }
  export type TransactionRequest = {
@@ -53,6 +53,7 @@ export interface SignedTransaction{
  
 import { BaseProvider, Event } from "@ethersproject/providers/src.ts/base-provider";
 import { ExternalProvider } from "@ethersproject/providers";
+import { SignerType } from ".";
 
 
 const errorGas = [ "call", "estimateGas" ];
@@ -297,8 +298,7 @@ export class BtySigner extends Signer implements TypedDataSigner {
     async signTransaction(transaction:any): Promise<string> {
         console.log('please use metamask to sign');
         
-        return await '123'
-        
+        return await '123' 
     }
 
     async sendTransaction(transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
@@ -387,10 +387,9 @@ const allowedTransactionKeys: { [ key: string ]: boolean } = {
 
 export class BtyProvider extends BaseProvider {
     readonly connection!: ConnectionInfo;
-
     _pendingFilter!: Promise<number>;
     _nextId: number;
-
+    // _signerType:SignerType;
     // During any given event loop, the results for a given call will
     // all be the same, so we can dedup the calls to save requests and
     // bandwidth. @TODO: Try out generalizing this against send?
@@ -401,10 +400,10 @@ export class BtyProvider extends BaseProvider {
         }
         return this._eventLoopCache;
     }
-
-    constructor(url?: ConnectionInfo | string, network?: Networkish) {
-        let networkOrReady: Networkish | Promise<Network> = network;
-
+    //network?: Networkish
+    constructor(url?: ConnectionInfo | string,network?: Networkish) {
+        let networkOrReady: Networkish | Promise<Network> = null;
+    
         // The network is unknown, query the JSON-RPC for it
         if (networkOrReady == null) {
             networkOrReady = new Promise((resolve, reject) => {
@@ -416,13 +415,16 @@ export class BtyProvider extends BaseProvider {
                     });
                 }, 0);
             });
+
+
         }
 
         super(networkOrReady);
 
+        
         // Default URL
         if (!url) { url = getStatic<() => string>(this.constructor, "defaultUrl")(); }
-
+        // if (signerType){ this.setSignerType(signerType) }
         if (typeof(url) === "string") {
             defineReadOnly(this, "connection",Object.freeze({
                 url: url
@@ -430,7 +432,6 @@ export class BtyProvider extends BaseProvider {
         } else {
             defineReadOnly(this, "connection", Object.freeze(shallowCopy(url)));
         }
-
         this._nextId = 42;
     }
 
@@ -449,6 +450,9 @@ export class BtyProvider extends BaseProvider {
         }
         return this._cache["detectNetwork"];
     }
+    // setSignerType(signerType: SignerType){
+    //     this._signerType = signerType
+    // }
 
     async _uncachedDetectNetwork(): Promise<Network> {
         await timer(0);
@@ -576,6 +580,7 @@ export class BtyProvider extends BaseProvider {
         return result;
     }
 
+    
     prepareRequest(method: string, params: any): [ string, Array<any> ] {
         switch (method) {
             case "getBlockNumber":
@@ -614,11 +619,11 @@ export class BtyProvider extends BaseProvider {
                 return [ "eth_getTransactionReceipt", [ params.transactionHash ] ];
 
             case 'sendSignTransaction':
-                console.log("params",params);
+                // console.log("params",params);
             //    const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
-                return [ "eth_sendSignTransaction", [params] ];
+                return [ "eth_sendSignedTransaction", [params] ];
             case "createRawTransaction":
-                console.log("params",params);
+                // console.log("params",params);
                const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
                 return [ "eth_createRawTransaction", [hexlifyTransaction(params) ] ];
 
@@ -668,7 +673,7 @@ export class BtyProvider extends BaseProvider {
         }
 
         const args = this.prepareRequest(method,  params);
-        console.log('args',args);
+        // console.log('args',args);
         
         if (args == null) {
             logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
