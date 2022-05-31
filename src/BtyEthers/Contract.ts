@@ -5,13 +5,14 @@ import { Block, BlockTag, Filter, FilterByBlockHash, Listener, Log, Provider, Tr
 import { Signer, VoidSigner } from "@ethersproject/abstract-signer";
 import { getAddress, getContractAddress } from "@ethersproject/address";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { arrayify, BytesLike, concat, hexlify, isBytes, isHexString } from "@ethersproject/bytes";
+import { arrayify, BytesLike, concat, DataOptions,hexlify, Hexable, isBytes, isHexString } from "@ethersproject/bytes";
 import { Deferrable, defineReadOnly, deepCopy, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
 import { AccessList, accessListify, AccessListish } from "@ethersproject/transactions";
 
 import { Logger } from "@ethersproject/logger";
 import { version } from "./Version";
 import { BtyProvider, BtySigner } from "./Provider";
+// import { TransactionResponse } from "@ethersproject/providers";
 const logger = new Logger(version);
 
 
@@ -146,6 +147,9 @@ async function resolveName(resolver: Signer | Provider, nameOrPromise: string | 
 
 // Recursively replaces ENS names with promises to resolve the name and resolves all properties
 async function resolveAddresses(resolver: Signer | Provider, value: any, paramType: ParamType | Array<ParamType>): Promise<any> {
+
+    console.log(resolver,value,paramType);
+    
     if (Array.isArray(paramType)) {
         return await Promise.all(paramType.map((paramType, index) => {
             return resolveAddresses(
@@ -402,7 +406,7 @@ function buildCall(contract: Contract, fragment: FunctionFragment, collapseSimpl
         
         const tx = await populateTransaction(contract, fragment, args);
 
-        console.log(tx);
+        console.log('tx',tx);
         
         const result = await signerOrProvider.call(tx, blockTag);
 
@@ -424,8 +428,9 @@ function buildCall(contract: Contract, fragment: FunctionFragment, collapseSimpl
     };
 }
 
+
 function buildSend(contract: Contract, fragment: FunctionFragment): ContractFunction<TransactionResponse> {
-    return async function(...args: Array<any>): Promise<TransactionResponse> {
+    return async function(...args: Array<any>): Promise<any> {
         // if (!contract.signer) {
         //     // console.log(this.provider);
             
@@ -440,17 +445,53 @@ function buildSend(contract: Contract, fragment: FunctionFragment): ContractFunc
         }
 
         const txRequest = await populateTransaction(contract, fragment, args);
-        
-        console.log(txRequest);
-        
-        //BtyEthers has no local singer
-        const tx = await contract.signer.sendTransaction(txRequest);
+        let tx;
+        console.log('here we are',txRequest,contract.provider._signerType);
+              // BtyEthers has no local singer
+       
+        if(contract.provider._signerType === 'metamask'){
+            // const ehters = (window as any).ethereum
+            const signer = await contract.provider.getSigner()
+            // console.log(signer,signer._address);
+            const _gasPrice = await contract.provider.getGasPrice()
+            const gasPrice =  BigNumber.from(_gasPrice).toString()
+          
+            const _gas = await contract.provider.estimateGas({
+               from:signer._address,
+               to:txRequest.to,
+               gasPrice,
+               value:0,
+               data:txRequest.data
+            })
+            const gas = BigNumber.from(_gas).toString()
 
-
-
-
+            const transaction = await contract.provider.createRawTransaction({
+                from:signer._address,
+                to:txRequest.to,
+                gas,
+                gasPrice,
+                value:'0',
+                data:txRequest.data
+            })
+            
+            const signature = await (window as any).ethereum.request({
+                method: "eth_sign",
+                params: [signer._address, transaction.sha256Hash],
+            })
+            console.log(contract.provider);
+            
+            tx = await contract.provider.sendSignTransaction({
+                rawTx:transaction.rawTx,
+                signature
+            })
+        }else{
+            tx = await contract.signer.sendTransaction(txRequest);
+            console.log(tx);
+            
+        }
+      
         // Tweak the tx.wait so the receipt has extra properties
-        addContractWait(contract, tx);
+        //addContractWait(contract, tx);
 
         return tx;
     };
@@ -1172,14 +1213,21 @@ export class Contract extends BaseContract {
     // The meta-class properties
     readonly [ key: string ]: ContractFunction | any;
 }
+export type SignerType =  'metamask'| 'walletconnect'| 'hdwallet'
+
+
+
+
+
 
 export class ContractFactory {
 
     readonly interface: Interface;
     readonly bytecode: string;
     readonly signer: Signer;
-
-    constructor(contractInterface: ContractInterface, bytecode: BytesLike | { object: string }, signer?: Signer) {
+    readonly signerType:SignerType
+    readonly provider: BtyProvider;
+    constructor(contractInterface: ContractInterface, bytecode: BytesLike | { object: string }, provider?: BtyProvider) {
 
         let bytecodeHex: string = null;
 
@@ -1204,19 +1252,18 @@ export class ContractFactory {
         }
 
         // If we have a signer, make sure it is valid
-        if (signer && !Signer.isSigner(signer)) {
-            logger.throwArgumentError("invalid signer", "signer", signer);
-        }
-
+        // if (signer && !Signer.isSigner(signer)) {
+        //     logger.throwArgumentError("invalid signer", "signer", signer);
+        // }
         defineReadOnly(this, "bytecode", bytecodeHex);
+        defineReadOnly(this, "provider", provider);
         defineReadOnly(this, "interface", getStatic<InterfaceFunc>(new.target, "getInterface")(contractInterface));
-        defineReadOnly(this, "signer", signer || null);
+        // defineReadOnly(this, "signer", signer || null);
     }
 
     // @TODO: Future; rename to populateTransaction?
     getDeployTransaction(...args: Array<any>): TransactionRequest {
         let tx: TransactionRequest = { };
-
         // If we have 1 additional argument, we allow transaction overrides
         if (args.length === this.interface.deploy.inputs.length + 1 && typeof(args[args.length - 1]) === "object") {
             tx = shallowCopy(args.pop());
@@ -1246,7 +1293,7 @@ export class ContractFactory {
         
 
         // Make sure the call matches the constructor signature
-        logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
+        // logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
 
         // Set the data to the bytecode + the encoded constructor arguments
         tx.data = hexlify(concat([
@@ -1256,37 +1303,88 @@ export class ContractFactory {
 
         return tx
     }
-
-    async deploy(...args: Array<any>): Promise<Contract> {
-
+//: Promise<Contract> 
+    async deploy(...args: Array<any>){
         let overrides: any = { };
 
         // If 1 extra parameter was passed in, it contains overrides
         if (args.length === this.interface.deploy.inputs.length + 1) {
             overrides = args.pop();
         }
-
         // Make sure the call matches the constructor signature
         logger.checkArgumentCount(args.length, this.interface.deploy.inputs.length, " in Contract constructor");
 
         // Resolve ENS names and promises in the arguments
-        const params = await resolveAddresses(this.signer, args, this.interface.deploy.inputs);
+        // console.log();
+        const params = await resolveAddresses(this.provider, args, this.interface.deploy.inputs);
         params.push(overrides);
+ 
 
         // Get the deployment transaction (with optional overrides)
+  
+
         const unsignedTx = this.getDeployTransaction(...params);
+        if(!this.provider._signerType){
+            throw new Error('please connect to signer first')
+        }
+        let tx;
+        switch(this.provider._signerType){
+            case 'metamask':
+                console.log(...params,unsignedTx,this.interface,'metamask work flow');
+                const signer = await this.provider.getSigner()
+                // console.log(signer,signer._address);
+                const _gasPrice = await this.provider.getGasPrice()
+                const gasPrice =  BigNumber.from(_gasPrice).toString()
+                const data =hexlify(concat([
+                    this.bytecode,
+                    this.interface.encodeDeploy(args)
+                ]))
+                const _gas = await this.provider.estimateGas({
+                   from:signer._address,
+                   to:null,
+                   gasPrice,
+                   value:0,
+                   data
+                })
+                const gas = BigNumber.from(_gas).toString()
+    
+                const transaction = await this.provider.createRawTransaction({
+                    from:signer._address,
+                    to:null,
+                    gas,
+                    gasPrice,
+                    value:'0',
+                    data
+                })
+                
+                const signature = await (window as any).ethereum.request({
+                    method: "eth_sign",
+                    params: [signer._address, transaction.sha256Hash],
+                })
+                tx = await this.provider.sendSignTransaction({
+                    rawTx:transaction.rawTx,
+                    signature
+            })
+            break;
+            default:
+                throw new Error('you must have provider to do that')
+        }
 
+        console.log(tx);
+        
         // Send the deployment transaction
-        const tx = await this.signer.sendTransaction(unsignedTx);
+        //  const tx = await this.signer.sendTransaction(unsignedTx);
 
-        const address = getStatic<(tx: TransactionResponse) => string>(this.constructor, "getContractAddress")(tx);
+        //const address = getStatic<(tx: TransactionResponse) => string>(this.constructor, "getContractAddress")(tx);
+
+        //少个bty计算合约地址的方法？
         const contract = getStatic<(address: string, contractInterface: ContractInterface, signer?: Signer) => Contract>(this.constructor, "getContract")(address, this.interface, this.signer);
 
-        // Add the modified wait that wraps events
-        addContractWait(contract, tx);
+        // // Add the modified wait that wraps events
+       // addContractWait(contract, tx);
 
-        defineReadOnly(contract, "deployTransaction", tx);
-        return contract;
+        // defineReadOnly(contract, "deployTransaction", tx);
+        // return contract;
     }
 
     attach(address: string): Contract {
@@ -1315,11 +1413,12 @@ export class ContractFactory {
             bytecode = compilerOutput.evm.bytecode;
         }
 
-        return new this(abi, bytecode, signer);
+        return new this(abi, bytecode);
     }
 
     static getInterface(contractInterface: ContractInterface) {
-        return Contract.getInterface(contractInterface);
+        const data = Contract.getInterface(contractInterface);        
+        return data
     }
 
     static getContractAddress(tx: { from: string, nonce: BytesLike | BigNumber | number }): string {

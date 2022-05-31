@@ -8,6 +8,7 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers,BigNumber,utils,ContractFactory,Wallet } from 'ethers';
 import abi from './abi.json'
 import erc20 from './erc20.json'
+import mycontract from './Lottery.json'
 import { sign } from 'crypto';
 import { createLoginBox } from './BtyEthers/View';
 import BtyEthers from './BtyEthers';
@@ -18,16 +19,36 @@ import './style.css'
 
 
 (async function(){
-  const web3 = new BtyEthers("http://121.52.224.82:8546")
-  web3.connect('metamask')
+  const web3 = new BtyEthers("https://121.52.224.82:8546")
+  // web3.connect('metamask')
   // const onboarding = new MetaMaskOnboarding();
   // const metamaskProvider = await detectEthereumProvider();
   // metamaskProvider.
   const app = document.getElementById('app')
   app.innerHTML = `
-    <div class=" text-red-500  py-10">
-      this is my Web3 Tools
+    <div class="py-10 min-w-[725px]">
+      <div class='header px-5 text-xl py-3 border-b'>
+         BtyEthers.js Methods
       </div>
+      <div class='Core  px-5 text-lg py-2 opacity-50'>
+        Core Functions
+      </div>
+      <div id='main' class=' grid grid-cols-3 py-5 justify-items-center gap-y-2 max-w-5xl' >
+      </div>
+
+      <div class='Contract  px-5 text-lg py-2 opacity-50'>
+        Contract Functions
+       </div>
+
+       <div id='contract' class=' grid grid-cols-3 py-5 justify-items-center  gap-y-2 max-w-5xl' >
+       </div>
+
+       <div class='Contract  px-5 text-lg py-2 opacity-50'>
+        Views Functions
+      </div>
+      <div id='view' class=' grid grid-cols-3 py-5 justify-items-center  gap-y-2 max-w-5xl' >
+      </div>
+    </div>
   `
   const buildButton = (text:string,twClass?:string)=>{
       let el = document.createElement('button')
@@ -36,22 +57,129 @@ import './style.css'
         el.setAttribute('class',twClass):''
       return el
   }
-  const btnStyle = ' py-3 px-2 shadow m-2'
-  const sendBtn = buildButton('click to send transaction',btnStyle)
-  const logoutBtn = buildButton('logout web3 account',btnStyle)
-  app.append(sendBtn,logoutBtn)
+  // core methods
+  const btnStyle = ' py-3 px-5 min-w-[220px] shadow m-2  hover:shadow-md rounded-md'
+  const btndisableStyle = ' py-3 px-5 min-w-[220px] shadow m-2 text-gray-400 cursor-not-allowed rounded-md'
 
+
+
+  const sendBtn = buildButton('send transaction',btnStyle)
+  const logoutBtn = buildButton('logout web3 account',btnStyle)
+  const connect = buildButton('connect metamask',btnStyle)
+  const getBalance = buildButton('get Balance',btnStyle)
+  const getBlock = buildButton('get Block',btnStyle)
+  const getBlockNumber = buildButton('get BlockNumber',btnStyle)
+  const network = buildButton('network',btnStyle)
+  const getGasPrice = buildButton('getGasPrice',btnStyle)
+  const addTokenAssets = buildButton('addTokenAssets',btnStyle)
+
+
+
+  // container
+  const main = document.getElementById('main')
+  const contracts = document.getElementById('contract')
+  const view = document.getElementById('view')
+
+
+  // contract methods
+  const getContract = buildButton('getContract',btnStyle)
+  const setContractInstance = buildButton('setContractInstance',btnStyle)
+  const callContractMetthod = buildButton('callContractMetthod',btnStyle)
+  const isContract = buildButton('isContract',btndisableStyle)
+  const deploy = buildButton('deploy',btnStyle)
+
+
+  //view methods
+  const toggleLogin = buildButton('toggleLogin',btnStyle)
+
+  // const getBlockWithTransactions = buildButton('get Block With Transactions',btnStyle)
+  main.append(connect,sendBtn,getBalance,getBlock,getBlockNumber,network,getGasPrice,addTokenAssets)
+  contracts.append(getContract,setContractInstance,callContractMetthod,isContract,deploy)
+  view.append(toggleLogin)
   // const logoutBtn = document.createElement('button')
 
   
 
-  sendBtn.onclick = ()=>{
-    web3.send({
+  sendBtn.onclick = async ()=>{
+    const sendTransaction = await web3.send({
       to:'0x89c893e850cff3d531f4c477112F052a536E4843',value:'10000000000'
-    })
+    })   
   }
 
+  deploy.onclick = async ()=>{
+    const res = await web3.deploy(mycontract.abi,mycontract.bytecode)
+    console.log(res);
+    
+  }
+  getGasPrice.onclick = async ()=>{
+    const network = await web3.getGasPrice()
+    console.log(network); 
+  }
+  addTokenAssets.onclick = async ()=>{
+    const network = await web3.addTokenAssets()
+    console.log(network); 
+  }
+
+  getContract.onclick = async ()=>{
+    const c =  web3.contract
+    console.log(c);
+  }
+
+  setContractInstance.onclick = async()=>{
+    const c = await web3.setContractInstance('0x0c680c2fb0c5f2c4fcaff64e368dfc7192b73b04',erc20)
+    return c
+  }
+
+  callContractMetthod.onclick= async ()=>{
+     const res = await web3.callContractMetthod('transfer',['0x89c893e850cff3d531f4c477112F052a536E4843',14442223])
+     console.log(res);
+     
+  }
+  isContract.onclick= async ()=>{
+    const res = await web3._provider.getCode('0x0c680c2fb0c5f2c4fcaff64e368dfc7192b73b04')
+    console.log(res);
+    
+  }
+
+
+  network.onclick = async ()=>{
+    const network = await web3.detectNetwork()
+    console.log(network); 
+  }
+  getBlock.onclick=async ()=>{
+    const code = await web3.getBlock()
+    console.log(code);
+    
+  }
+
+  getBlockNumber.onclick=async ()=>{
+    const blockNumber = await web3.getBlockNumber()
+    console.log(blockNumber);
+  }
+
+  toggleLogin.onclick=async ()=>{
+    // web3._view.toggleLogin();
+    web3.toggelViewLogin()
+
+  }
+
+  getBalance.onclick = async ()=>{
+    const balance = await web3.getBalance()
+    console.log(balance);
+    
+  }
+
+  logoutBtn.onclick=async ()=>{
+    await web3.disconnect()
+  }
+  connect.onclick=async()=>{
+    await web3.connect('metamask')
+  }
   
+
+
+
+
 
   // const tx =  await web3._buildTransaction({to:'0x89c893e850cff3d531f4c477112F052a536E4843',value:'200000'})
   // console.log();
