@@ -1,5 +1,5 @@
 {
-  "name": "chain33_eth_compatibility",
+  "name": "btyethers",
   "description": "an typescript module extends from ethersJs to enable Bty Chain33 use Ether.js library",
   "private": true,
   "version": "5.6.1",

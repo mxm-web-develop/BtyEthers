@@ -5,7 +5,7 @@
 import { Provider, TransactionResponse } from "@ethersproject/abstract-provider";
 import { Signer, TypedDataDomain, TypedDataField, TypedDataSigner } from "@ethersproject/abstract-signer";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { Bytes, BytesLike, hexlify, hexValue, isHexString } from "@ethersproject/bytes";
+import { Bytes, BytesLike, DataOptions, Hexable, hexValue, isBytes, isHexString } from "@ethersproject/bytes";
 import { _TypedDataEncoder } from "@ethersproject/hash";
 import { Network, Networkish } from "@ethersproject/networks";
 import { checkProperties, deepCopy, Deferrable, defineReadOnly, getStatic, resolveProperties, shallowCopy } from "@ethersproject/properties";
@@ -16,6 +16,70 @@ import { ConnectionInfo, fetchJson, poll } from "@ethersproject/web";
 import { Logger } from "@ethersproject/logger";
 import { version } from "./Version";
 const logger = new Logger(version);
+
+
+const HexCharacters: string = "0123456789abcdef";
+function isHexable(value: any): value is Hexable {
+    return !!(value.toHexString);
+}
+export function hexlify(value: BytesLike | Hexable | number | bigint, options?: DataOptions): string {
+    console.log(value);
+    if (!options) { options = { }; }
+    if (typeof(value) === "number") {
+        logger.checkSafeUint53(value, "invalid hexlify value");
+        let hex = "";
+        while (value) {
+            hex = HexCharacters[value & 0xf] + hex;
+            value = Math.floor(value / 16);
+        }
+
+        if (hex.length) {
+            if (hex.length % 2) { hex = "0" + hex; }
+            return "0x" + hex;
+        }
+
+        return "0x00";
+    }
+
+    if (typeof(value) === "bigint") {
+        value = value.toString(16);
+        if (value.length % 2) { return ("0x0" + value); }
+        return "0x" + value;
+    }
+
+    if (options.allowMissingPrefix && typeof(value) === "string" && value.substring(0, 2) !== "0x") {
+         value = "0x" + value;
+    }
+
+    if (isHexable(value)) { return value.toHexString(); }
+
+    if (isHexString(value)) {
+        if ((<string>value).length % 2) {
+            if (options.hexPad === "left") {
+                value = "0x0" + (<string>value).substring(2);
+            } else if (options.hexPad === "right") {
+                value += "0";
+            } else {
+                logger.throwArgumentError("hex data is odd-length", "value", value);
+            }
+        }
+        return (<string>value).toLowerCase();
+    }
+
+    if (isBytes(value)) {
+        let result = "0x";
+        for (let i = 0; i < value.length; i++) {
+             let v = value[i];
+             result += HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f];
+        }
+        return result;
+    }
+
+    return logger.throwArgumentError("invalid hexlify value", "value", value);
+}
+
+
+
 export interface SignedTransaction{
     rawTx:string
    signature:string
@@ -389,6 +453,7 @@ export class BtyProvider extends BaseProvider {
     readonly connection!: ConnectionInfo;
     _pendingFilter!: Promise<number>;
     _nextId: number;
+    _signerType:SignerType;
     // _signerType:SignerType;
     // During any given event loop, the results for a given call will
     // all be the same, so we can dedup the calls to save requests and
@@ -401,7 +466,7 @@ export class BtyProvider extends BaseProvider {
         return this._eventLoopCache;
     }
     //network?: Networkish
-    constructor(url?: ConnectionInfo | string,network?: Networkish) {
+    constructor(url?: ConnectionInfo | string,_signerType?:SignerType) {
         let networkOrReady: Networkish | Promise<Network> = null;
     
         // The network is unknown, query the JSON-RPC for it
@@ -420,7 +485,7 @@ export class BtyProvider extends BaseProvider {
         }
 
         super(networkOrReady);
-
+        this._signerType = _signerType
         
         // Default URL
         if (!url) { url = getStatic<() => string>(this.constructor, "defaultUrl")(); }
@@ -486,6 +551,9 @@ export class BtyProvider extends BaseProvider {
 
     getSigner(addressOrIndex?: string | number): BtySigner {
         console.log(_constructorGuard);
+        if(this._signerType === 'metamask'){
+            return new BtySigner(_constructorGuard, this, (window as any).ethereum.selectedAddress);
+        }
         return new BtySigner(_constructorGuard, this, addressOrIndex);
     }
 
@@ -504,28 +572,6 @@ export class BtyProvider extends BaseProvider {
     async sendSignTransaction(signedTransaction:SignedTransaction):Promise<string>{
          return  await this.perform('sendSignTransaction',signedTransaction)
      }
- 
-    // async requestFetch(method:string,params:any){
-    //      const request = {
-    //          method: method,
-    //          params: [params],
-    //          id: (this._nextId++),
-    //          jsonrpc: "2.0"
-    //      };
-    //      console.log(request);
-         
-    //      return await fetch(this.connection.url,{
-    //          method:"POST",
-    //          headers: {
-    //              'Content-Type': 'application/json',
-    //          },
-    //          body:JSON.stringify(request)
-    //      }).then(res=>{
-    //          if(res){
-    //              return res.json()
-    //          }
-    //      })
-    //  }
  
     send(method: string, params: Array<any>): Promise<any> {
         const request = {
@@ -580,7 +626,7 @@ export class BtyProvider extends BaseProvider {
         return result;
     }
 
-    
+
     prepareRequest(method: string, params: any): [ string, Array<any> ] {
         switch (method) {
             case "getBlockNumber":
@@ -623,7 +669,6 @@ export class BtyProvider extends BaseProvider {
             //    const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
                 return [ "eth_sendSignedTransaction", [params] ];
             case "createRawTransaction":
-                // console.log("params",params);
                const hexlifyTransaction = getStatic<(t: TransactionRequest, a?: { [key: string]: boolean }) => { [key: string]: string }>(this.constructor, "hexlifyTransaction");
                 return [ "eth_createRawTransaction", [hexlifyTransaction(params) ] ];
 
@@ -674,7 +719,6 @@ export class BtyProvider extends BaseProvider {
 
         const args = this.prepareRequest(method,  params);
         // console.log('args',args);
-        
         if (args == null) {
             logger.throwError(method + " not implemented", Logger.errors.NOT_IMPLEMENTED, { operation: method });
         }
@@ -769,14 +813,14 @@ export class BtyProvider extends BaseProvider {
 
         // JSON-RPC now requires numeric values to be "quantity" values
         ["chainId", "gas", "gasLimit", "gasPrice", "type", "maxFeePerGas", "maxPriorityFeePerGas", "nonce", "value"].forEach(function(key) {
-            if ((<any>transaction)[key] == null) { return; }
+            if ((<any>transaction)[key] == null || undefined) { return; }
             const value = hexValue(BigNumber.from((<any>transaction)[key]));
             if (key === "gasLimit") { key = "gas"; }
             result[key] = value;
         });
 
-        ["from", "to", "data"].forEach(function(key) {
-            if ((<any>transaction)[key] == null) { return; }
+        ["from", "to", "data"].forEach(function(key) {     
+            if ((<any>transaction)[key] == null || undefined) { return; }
             result[key] = hexlify((<any>transaction)[key]);
         });
 

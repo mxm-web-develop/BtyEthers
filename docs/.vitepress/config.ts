@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitepress'
 import pkg from '../../package.json'
 export default defineConfig({
-  title: pkg.name,
+  title: 'BtyEthers.js',
   description: pkg.description,
   themeConfig:{
     nav:[
