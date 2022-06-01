@@ -132,8 +132,7 @@ import './style.css'
 
   callContractMetthod.onclick= async ()=>{
      const res = await web3.callContractMetthod('transfer',['0x89c893e850cff3d531f4c477112F052a536E4843',14442223])
-     console.log(res);
-     
+      return res
   }
   isContract.onclick= async ()=>{
     const res = await web3.isContract('0x89c893e850cff3d531f4c477112F052a536E4843')

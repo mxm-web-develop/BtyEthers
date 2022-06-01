@@ -6,6 +6,13 @@
   "keywords": [
     "ethersJs","Bty","web3","eth","erc20","blockchain"
   ],
+  "homepage": "https://github.com/mxm-web-develop/BtyEthers",
+  "bugs": {
+    "url":"https://github.com/mxm-web-develop/BtyEthers/issues",
+    "email": "mxm.web.develop@gmail.com"
+  },
+  "main": "/src/BtyEthers/index.ts",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

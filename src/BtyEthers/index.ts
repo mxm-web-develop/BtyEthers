@@ -63,32 +63,19 @@ export default class BtyEthers {
    }
 
    async getBlock(block?:number){
-      switch(this._signerType){
-         case 'metamask':
-            return this._provider.getBlock(block||'latest');
-         default:
-            return null;
-      }
+
+         return this._provider.getBlock(block||'latest');
+  
    }
    async getBlockNumber(){
-      switch(this._signerType){
-         case 'metamask':
-            return this._provider.getBlockNumber();
-         default:
-            return null;
-      }
+      return this._provider.getBlockNumber();
    }
    /**
     * 根据ens解析chainID获取网络信息
     * @returns 
     */
    async detectNetwork(){
-      switch(this._signerType){
-         case 'metamask':
-            return this._provider.detectNetwork();
-         default:
-            return null;
-      }
+      return this._provider.detectNetwork();
    }
 
    /**
@@ -96,12 +83,8 @@ export default class BtyEthers {
     * @returns BigNumber {_hex: '0x02540be400', _isBigNumber: true}
     */
    async getGasPrice(){
-      switch(this._signerType){
-         case 'metamask':
-            return this._provider.getGasPrice();
-         default:
-            return null;
-      }
+         return this._provider.getGasPrice();
+
    }
 
    toggelViewLogin(){
