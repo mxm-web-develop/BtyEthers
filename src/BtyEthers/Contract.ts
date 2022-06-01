@@ -1365,12 +1365,14 @@ export class ContractFactory {
                     rawTx:transaction.rawTx,
                     signature
             })
-            break;
+            const constractAddrs = await this.provider.getContractorAddress(signer._address,tx)
+            console.log('constractAddrs',constractAddrs);
+            const contract = getStatic<(address: string, contractInterface: ContractInterface, provider?: BtyProvider) => Contract>(this.constructor, "getContract")(constractAddrs, this.interface, this.provider);
+            return contract
             default:
                 throw new Error('you must have provider to do that')
         }
 
-        console.log(tx);
         
         // Send the deployment transaction
         //  const tx = await this.signer.sendTransaction(unsignedTx);
@@ -1378,7 +1380,7 @@ export class ContractFactory {
         //const address = getStatic<(tx: TransactionResponse) => string>(this.constructor, "getContractAddress")(tx);
 
         //少个bty计算合约地址的方法？
-        const contract = getStatic<(address: string, contractInterface: ContractInterface, signer?: Signer) => Contract>(this.constructor, "getContract")(address, this.interface, this.signer);
+       
 
         // // Add the modified wait that wraps events
        // addContractWait(contract, tx);

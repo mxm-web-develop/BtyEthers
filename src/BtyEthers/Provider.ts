@@ -521,13 +521,19 @@ export class BtyProvider extends BaseProvider {
 
     async _uncachedDetectNetwork(): Promise<Network> {
         await timer(0);
-
+  
+        
         let chainId = null;
+
         try {
+            console.log(1);
+            
             chainId = await this.send("eth_chainId", [ ]);
+            console.log(2);
         } catch (error) {
             try {
                 chainId = await this.send("net_version", [ ]);
+                console.log(3);
             } catch (error) { }
         }
 
@@ -571,8 +577,11 @@ export class BtyProvider extends BaseProvider {
     }
     async sendSignTransaction(signedTransaction:SignedTransaction):Promise<string>{
          return  await this.perform('sendSignTransaction',signedTransaction)
-     }
- 
+    }
+     async getContractorAddress(address: string,hash:string){
+        return  await this.perform('getContractorAddress',[address,hash])
+    }
+
     send(method: string, params: Array<any>): Promise<any> {
         const request = {
             method: method,
@@ -650,6 +659,8 @@ export class BtyProvider extends BaseProvider {
             case "sendTransaction":
                 return [ "eth_sendRawTransaction", [ params.signedTransaction ] ]
 
+            case "getContractorAddress":
+                return [ "eth_getContractorAddress", params]
             case "getBlock":
                 if (params.blockTag) {
                     return [ "eth_getBlockByNumber", [ params.blockTag, !!params.includeTransactions ] ];

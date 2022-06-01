@@ -85,7 +85,7 @@ import './style.css'
   const getContract = buildButton('getContract',btnStyle)
   const setContractInstance = buildButton('setContractInstance',btnStyle)
   const callContractMetthod = buildButton('callContractMetthod',btnStyle)
-  const isContract = buildButton('isContract',btndisableStyle)
+  const isContract = buildButton('isContract',btnStyle)
   const deploy = buildButton('deploy',btnStyle)
 
 
@@ -136,7 +136,8 @@ import './style.css'
      
   }
   isContract.onclick= async ()=>{
-    const res = await web3._provider.getCode('0x0c680c2fb0c5f2c4fcaff64e368dfc7192b73b04')
+    const res = await web3.isContract('0x89c893e850cff3d531f4c477112F052a536E4843')
+
     console.log(res);
     
   }

@@ -137,7 +137,25 @@ export default class BtyEthers {
       return await this.contract.functions[methodName](...params)
 
    }
-
+   //0xdf1b76ae6de363bc784c810a516f67bbcee4875e
+   async isContract(contractAddress: string){
+      let res:{
+         contract:boolean;
+         data:string|null;
+      }={
+         contract:false,
+         data:null
+      }
+      try{
+         const code = await this._provider.getCode(contractAddress)
+         res.contract = true
+         res.data = code
+      }catch(err){
+         res.contract = false
+         res.data = null
+      }
+      return res
+   }
 
    // async listAccounts
    // lookupAddress()
@@ -214,8 +232,10 @@ export default class BtyEthers {
       const contract = await factory.deploy()
       console.log(contract,'deploy');
       
-      // await contract.deployed()
-      // return `Deployment successful! Contract Address: ${contract.address}`
+      const finished = await contract.deployed()
+      console.log(finished);
+      
+      return `Deployment successful! Contract Address: ${contract.address}`
    }
 
    async addTokenAssets(){
