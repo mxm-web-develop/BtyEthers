@@ -3,6 +3,9 @@
   "description": "an typescript module extends from ethersJs to enable Bty Chain33 use Ether.js library",
   "private": true,
   "version": "5.6.1",
+  "keywords": [
+    "ethersJs","Bty","web3","eth","erc20","blockchain"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
