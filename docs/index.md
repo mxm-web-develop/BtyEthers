@@ -1,10 +1,10 @@
 ---
 home: true
 navbar: false
-heroImage: /logo.png
+# heroImage: /logo.png
 heroAlt: Logo image
-heroText: BtyEthers.js
-tagline: Hero subtitle
+heroText: Chain33Ethers.js
+tagline: chain33链基于ethers.js对以太坊的RPC接口兼容工具
 actionText: 开始使用
 actionLink: /usage/
 

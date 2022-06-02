@@ -1,5 +1,5 @@
 # 模块详情
-BtyEthers 是一个 [ethers.js](https://docs.ethers.io/v5/) 衍生的工具包, 改文档只会标注BtyEthers和[ethers.js](https://docs.ethers.io/v5/)不同的地方，其余方法的详细使用请查[ethers.js](https://docs.ethers.io/v5/)的官网文档
+chain33Ethers 是一个 [ethers.js](https://docs.ethers.io/v5/) 衍生的工具包, 改文档只会标注BtyEthers和[ethers.js](https://docs.ethers.io/v5/)不同的地方，其余方法的详细使用请查[ethers.js](https://docs.ethers.io/v5/)的官网文档
 
 ## 结构
 ```dotnetcli
@@ -52,7 +52,7 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
     网络请求Contract对象中的方法
 ```ts
 
-    const res = await web3.callContractMetthod('transfer',['0x89c893e850cff3d531f4c477112F052a536E4843',14442223])
+    const res = await btyEther.callContractMetthod('transfer',['0x89c893e850cff3d531f4c477112F052a536E4843',14442223])
     return res
 
 ```

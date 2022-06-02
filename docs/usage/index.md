@@ -14,7 +14,7 @@ Chain33 to Ethereum 是基于[ethers.js](https://docs.ethers.io/v5/) 衍生的�
 
 - ### 发送交易
 ```typescript
-const sendTransaction = await web3.send({
+const sendTransaction = await btyEther.send({
     to:'0x89c893e850cff3d531f4c477112F052a536E4843',value:'10000000000'
 })   
 
@@ -22,5 +22,5 @@ const sendTransaction = await web3.send({
 
 - ### 部署合约
 ```typescript
-const res = await web3.deploy(mycontract.abi,mycontract.bytecode)
+const res = await btyEther.deploy(mycontract.abi,mycontract.bytecode)
 ```

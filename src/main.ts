@@ -1,7 +1,7 @@
 // import detectEthereumProvider from '@metamask/detect-provider';
 // import MetaMaskOnboarding from '@metamask/onboarding';
-import { BtyProvider,BtySigner } from './BtyEthers/Provider'
-import {Contract} from './BtyEthers/Contract'
+import { BtyProvider,BtySigner } from './chain33Ethers/Provider'
+import {Contract} from './chain33Ethers/Contract'
 // import BtyEthers from './BtyEthers'; 
 import MetaMaskOnboarding from '@metamask/onboarding';
 import detectEthereumProvider from '@metamask/detect-provider';
@@ -10,8 +10,8 @@ import abi from './abi.json'
 import erc20 from './erc20.json'
 import mycontract from './Lottery.json'
 import { sign } from 'crypto';
-import { createLoginBox } from './BtyEthers/View';
-import BtyEthers from './BtyEthers';
+import { createLoginBox } from './chain33Ethers/View';
+import BtyEthers from './chain33Ethers';
 import './style.css'
 //eth_estimateGas
 // console.log(abi);
@@ -24,6 +24,9 @@ import './style.css'
   // const onboarding = new MetaMaskOnboarding();
   // const metamaskProvider = await detectEthereumProvider();
   // metamaskProvider.
+
+
+
   const app = document.getElementById('app')
   app.innerHTML = `
     <div class="py-10 min-w-[725px]">
@@ -113,7 +116,6 @@ import './style.css'
   }
   getGasPrice.onclick = async ()=>{
     const network = await web3.getGasPrice()
-    console.log(network); 
   }
   addTokenAssets.onclick = async ()=>{
     const network = await web3.addTokenAssets()
@@ -134,6 +136,7 @@ import './style.css'
      const res = await web3.callContractMetthod('transfer',['0x89c893e850cff3d531f4c477112F052a536E4843',14442223])
       return res
   }
+  
   isContract.onclick= async ()=>{
     const res = await web3.isContract('0x89c893e850cff3d531f4c477112F052a536E4843')
 
