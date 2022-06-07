@@ -19,7 +19,7 @@ import './style.css'
 
 
 (async function(){
-  const web3 = new BtyEthers("https://121.52.224.82:8546")
+  const web3 = new BtyEthers("http://121.52.224.82:8546")
   // web3.connect('metamask')
   // const onboarding = new MetaMaskOnboarding();
   // const metamaskProvider = await detectEthereumProvider();
@@ -60,6 +60,22 @@ import './style.css'
         el.setAttribute('class',twClass):''
       return el
   }
+
+  const statHTML= (state:boolean,child:any)=> {
+    let el = document.createElement('div')
+    el.innerHTML = `<div>
+      <div class='text-lg'>State</div>
+      <div>${state}</div>
+      <div class='slot'></div>
+    </div>
+   `
+   const slot = el.querySelector('.slot')
+   slot.append(
+    child
+   )
+   return el
+  }
+
   // core methods
   const btnStyle = ' py-3 px-5 min-w-[220px] shadow m-2  hover:shadow-md rounded-md'
   const btndisableStyle = ' py-3 px-5 min-w-[220px] shadow m-2 text-gray-400 cursor-not-allowed rounded-md'
@@ -67,6 +83,7 @@ import './style.css'
 
 
   const sendBtn = buildButton('send transaction',btnStyle)
+  const send = statHTML(true,sendBtn)
   const logoutBtn = buildButton('logout web3 account',btnStyle)
   const connect = buildButton('connect metamask',btnStyle)
   const getBalance = buildButton('get Balance',btnStyle)
@@ -96,7 +113,7 @@ import './style.css'
   const toggleLogin = buildButton('toggleLogin',btnStyle)
 
   // const getBlockWithTransactions = buildButton('get Block With Transactions',btnStyle)
-  main.append(connect,sendBtn,getBalance,getBlock,getBlockNumber,network,getGasPrice,addTokenAssets)
+  main.append(connect,getBalance,getBlock,getBlockNumber,network,getGasPrice,addTokenAssets,send)
   contracts.append(getContract,setContractInstance,callContractMetthod,isContract,deploy)
   view.append(toggleLogin)
   // const logoutBtn = document.createElement('button')
@@ -136,7 +153,7 @@ import './style.css'
      const res = await web3.callContractMetthod('transfer',['0x89c893e850cff3d531f4c477112F052a536E4843',14442223])
       return res
   }
-  
+
   isContract.onclick= async ()=>{
     const res = await web3.isContract('0x89c893e850cff3d531f4c477112F052a536E4843')
 

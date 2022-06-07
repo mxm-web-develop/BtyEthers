@@ -19,7 +19,13 @@ export default class BtyEthers {
    private _contract:Contract | undefined;
    utils:typeof utils
    constructor(jsonRpcUrl:string){
-      this._provider = new BtyProvider(jsonRpcUrl)
+      try{
+         this._provider = new BtyProvider(jsonRpcUrl)
+      }catch(e){
+         console.log(595959595);
+         
+      }
+
       this._jsonRpcUrl = jsonRpcUrl
       this._onboarding = new MetaMaskOnboarding()
       if(window){
