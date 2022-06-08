@@ -43,7 +43,13 @@ export default class BtyEthers {
       switch(this._signerType){
          case 'metamask':
           this._address  =  await this._metaMaskInit()
-          break;
+          return {
+            _address:this._address,
+            _provider:this._provider,
+            _signerType:this._signerType,
+            __wallet:this._wallet,
+   
+          }
       }
    }
 
@@ -55,7 +61,12 @@ export default class BtyEthers {
             this._wallet = null;
             this._signerType = null;
             this._provider= null
-         break
+         return{
+            _address:this._address,
+            _provider:this._provider,
+            _signerType:this._signerType,
+            __wallet:this._wallet,
+         }
       }
    }
    
@@ -68,7 +79,7 @@ export default class BtyEthers {
       }
    }
 
-   async getBlock(block?:number){
+   async getBlock(block?:number|string){
          return this._provider.getBlock(block||'latest');
    }
    async getBlockNumber(){

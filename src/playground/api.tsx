@@ -1,0 +1,51 @@
+export const CoreApis = [
+    {
+        methodName:'connect',
+
+        request:[
+            {
+                type:"string",
+                name:"wallet-type",
+                default:'metamask',
+                el:"input"
+            }
+        ]       
+    }, 
+    {
+        methodName:'disConnect',
+    },
+    {
+        methodName:'sendTransaction',
+        request:[
+            {
+                type:"string",
+                name:"to",
+                el:"input",
+                placeholder:"to Address"
+            },
+            {
+                type:"string",
+                name:"value",
+                el:"input"
+            },
+        ]         
+    }, 
+    {
+        methodName:'getBalance',
+    },
+    {
+        methodName:'getBlock',  
+    }, 
+    {
+        methodName:'getBlockNumber',  
+    }, 
+    {
+        methodName:'getGasPrice',   
+    }, 
+    {
+        methodName:'network',   
+    }, 
+    {
+        methodName:'addTokenAssets',   
+    }
+]

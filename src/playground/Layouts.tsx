@@ -9,7 +9,7 @@ export const Layout  = (props:LayoutType)=>{
     const [open,setOpen] = useState(true)
     return (
         <div>
-            <div className="px-5 py-3 font-semibold bg-slate-500 text-white flex justify-between">
+            <div className="px-5 py-3 font-semibold bg-slate-500 text-white flex justify-between ">
                 <div>
                 - {props.title}
                 </div>

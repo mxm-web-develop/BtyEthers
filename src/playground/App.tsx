@@ -8,19 +8,99 @@ import debounce  from 'lodash/debounce'
 import {ExclamationCircleIcon, EmojiHappyIcon, EmojiSadIcon} from '@heroicons/react/solid'
 import { useState } from "react";
 import { AppStore } from "./store";
+import { CoreApis } from "./api";
+import { useAsyncState } from "./hooks";
 const App = () => {
-  const [network,setNetwork] = useState(0)
+  const [network,setNetwork] = useAsyncState(0)
   const [btyEther,setBtyEther] = useState<BtyEthers>(null)
+  const [connect,setConnect] = useAsyncState(false)
+  const [api,setApi] = useAsyncState([])
   const initialApp = debounce(async (e:any)=>{
     const web3 = new BtyEthers(e.target.value)
     setBtyEther(web3)
     try{
-         await web3.getBlockNumber()
-        setNetwork(1)
+        await web3.getBlockNumber()
+        await setNetwork(1)
+        await setApi([
+            {
+                methodName:'connect',
+           
+                request:[
+                    {
+                        type:"string",
+                        name:"wallet-type",
+                        default:'metamask',
+                        el:"input"
+                    }
+                ]       
+            }, 
+            {
+                methodName:'disConnect',
+
+            },
+            {
+                methodName:'sendTransaction',
+                request:[
+                    {
+                        type:"string",
+                        name:"to",
+                        el:"input",
+                        placeholder:"to address"
+                    },
+                    {
+                        type:"string",
+                        name:"value",
+                        el:"input",
+                        placeholder:"amount value"
+                    },
+                ]         
+            }, 
+            {
+                methodName:'getBalance',
+              
+            },
+            {
+                methodName:'getBlock',
+                request:[
+                    {
+                        type:"string",
+                        name:"block",
+                        el:"input",
+                        placeholder:"block number or latest"
+                    }
+                ]   
+                       
+            }, 
+            {
+                methodName:'getBlockNumber',
+                   
+            }, 
+            {
+                methodName:'getGasPrice',
+                
+            }, 
+            {
+                methodName:'network',
+                     
+            }, 
+            {
+                methodName:'getTransactionReceipt'
+            },
+            {
+                methodName:'getTransaction'
+            },
+            {
+                methodName:'getCode'
+            },
+            {
+                methodName:'addTokenAssets',
+                 
+            }
+        ])
     }catch(e){
-        setNetwork(2)
+        await setNetwork(2)
     }  
-  },800)
+  },300)
   const genNetWorkIcon = (network: number)=>{
     switch(network){
         case 1:
@@ -35,11 +115,13 @@ const App = () => {
     <AppStore.Provider value={
         {
             network:network,
-            connect:false,
-            wallet:btyEther
+            connect:connect,
+            wallet:btyEther,
+            api:api,
+            doSetConnect:setConnect
         }
     }>
-    <div>
+    <div className='min-w-[1024px]'>
       <div className="hero text-xl py-5 px-5 border-b flex justify-between">
         <div className=" opacity-50">Chain33-Ethers Playground</div>
         <div className=" initial pannel flex px-2 mr-2">
