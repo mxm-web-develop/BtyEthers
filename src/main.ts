@@ -26,6 +26,13 @@ import './style.css'
   // metamaskProvider.
 
 
+//http://121.52.224.82:8546
+ // 0x89c893e850cff3d531f4c477112F052a536E4843
+ //130个
+//0xbecb3a3f38b29c8a91288cf1384890aa49215f344458524791a0deed2e6bbabc
+
+
+//contract address : 0x6b52c3ac63b6964ad706884acf42ee366b3ec962
 
   const app = document.getElementById('app')
   app.innerHTML = `

@@ -93,6 +93,18 @@ export default class BtyEthers {
       return this._provider.detectNetwork();
    }
 
+   async getTransactionReceipt(hash:string){
+      return this._provider.getTransactionReceipt(hash)
+   }
+
+   async getTransaction(hash:string){
+      return this._provider.getTransaction(hash)
+   }
+
+
+   async getTransactionCount(){
+      return this._provider.getTransactionCount(this._address)
+   }
    /**
     * 获取交易费价格
     * @returns BigNumber {_hex: '0x02540be400', _isBigNumber: true}

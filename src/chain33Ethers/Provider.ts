@@ -518,7 +518,82 @@ export class BtyProvider extends BaseProvider {
     // setSignerType(signerType: SignerType){
     //     this._signerType = signerType
     // }
+    async getTransactionReceipt(transactionHash: string | Promise<string>): Promise<any> {
+        await this.getNetwork();
 
+        transactionHash = await transactionHash;
+
+        const params = { transactionHash: this.formatter.hash(transactionHash, true) };
+        const result = await this.perform("getTransactionReceipt", params);
+        return result;
+        // return poll(async () => {
+        //     const result = await this.perform("getTransactionReceipt", params);
+
+        //     if (result == null) {
+        //         if (this._emitted["t:" + transactionHash] == null) {
+        //             return null;
+        //         }
+        //         return undefined;
+        //     }
+
+        //     // "geth-etc" returns receipts before they are ready
+        //     if (result.blockHash == null) { return undefined; }
+
+        //     const receipt = this.formatter.receipt(result);
+
+        //     if (receipt.blockNumber == null) {
+        //         receipt.confirmations = 0;
+
+        //     } else if (receipt.confirmations == null) {
+        //         const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
+
+        //         // Add the confirmations using the fast block number (pessimistic)
+        //         let confirmations = (blockNumber - receipt.blockNumber) + 1;
+        //         if (confirmations <= 0) { confirmations = 1; }
+        //         receipt.confirmations = confirmations;
+        //     }
+
+        //     return receipt;
+        // }, { oncePoll: this });
+    }
+
+
+
+
+    async getTransaction(transactionHash: string | Promise<string>): Promise<TransactionResponse> {
+        await this.getNetwork();
+        // transactionHash = await transactionHash;
+
+        const params = { transactionHash: this.formatter.hash(transactionHash, true) };
+        const result = await this.perform("getTransaction", params);
+        return result
+        // return poll(async () => {
+        //     const result = await this.perform("getTransaction", params);
+
+        //     if (result == null) {
+        //         if (this._emitted["t:" + transactionHash] == null) {
+        //             return null;
+        //         }
+        //         return undefined;
+        //     }
+
+        //     const tx = this.formatter.transactionResponse(result);
+
+        //     if (tx.blockNumber == null) {
+        //         tx.confirmations = 0;
+
+        //     } else if (tx.confirmations == null) {
+        //         const blockNumber = await this._getInternalBlockNumber(100 + 2 * this.pollingInterval);
+
+        //         // Add the confirmations using the fast block number (pessimistic)
+        //         let confirmations = (blockNumber - tx.blockNumber) + 1;
+        //         if (confirmations <= 0) { confirmations = 1; }
+        //         tx.confirmations = confirmations;
+        //     }
+
+        //     return this._wrapTransaction(tx);
+        // }, { oncePoll: this });
+    }
     async _uncachedDetectNetwork(): Promise<Network> {
         await timer(0);
   
