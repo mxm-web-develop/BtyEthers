@@ -715,7 +715,7 @@ export class BaseContract {
     // Wrapped functions to call emit and allow deregistration from the provider
     _wrappedEmits: { [ eventTag: string ]: (...args: Array<any>) => void };
 
-    constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider?: BtySigner | BtyProvider) {
+    constructor(addressOrName: string, contractInterface: ContractInterface, signerOrProvider?:  BtyProvider) {
         // @TODO: Maybe still check the addressOrName looks like a valid address or name?
         //address = getAddress(address);
         defineReadOnly(this, "interface", getStatic<InterfaceFunc>(new.target, "getInterface")(contractInterface));
@@ -724,7 +724,7 @@ export class BaseContract {
             defineReadOnly(this, "provider", null);
             defineReadOnly(this, "signer", null);
         } else if (Signer.isSigner(signerOrProvider)) {
-            defineReadOnly(this, "provider", signerOrProvider.provider || null);
+            defineReadOnly(this, "provider", signerOrProvider);
             defineReadOnly(this, "signer", signerOrProvider);
         } else if (Provider.isProvider(signerOrProvider)) {
             defineReadOnly(this, "provider", signerOrProvider);
