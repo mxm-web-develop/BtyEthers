@@ -91,17 +91,12 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
 
     **returns**
 
-    交易信息
-    ```ts
-    [ 
-        "eth_sendSignedTransaction", 
-        [ params:{rawTx:string,signature:string}] 
-    ]
-    ```
+    交易hash
+
 - ### 获取账户余额
     **getBalance()**
 
-    返回address的余额的（类型为 BigNumber） Promise 对象。 
+    完全继承于[ethers.js](https://docs.ethers.io/v5/) getBalance()方法
 
     **param**
     
@@ -141,7 +136,7 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
 - ### 获取网络信息
     **detectNetwork()**
 
-    完全继承于[ethers.js](https://docs.ethers.io/v5/) detectNetwork()方法
+    根据ens解析chainID获取网络信息
 
     **param**
 
@@ -158,6 +153,33 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
         _defaultProvider?: (providers: any, options?: any) => any
     }
     ```
+
+- ### 获取交易收据
+    **getTransactionReceipt(hash:string)**
+
+    根据交易hash获取交易收据信息
+
+    **param**
+
+    hash:string
+
+    **returns**
+
+    交易收据信息
+
+- ### 获取交易信息
+    **getTransaction(hash:string)**
+
+    根据交易hash获取交易信息
+
+    **param**
+
+    hash:string
+
+    **returns**
+
+    交易信息
+
 - ### 获取交易费价格
     **getGasPrice()**
 
@@ -171,10 +193,10 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
 
     交易费价格
 
-- ### 获取用户信息
+<!-- - ### 获取用户信息
     **getSigner()**
     
-    在使用metamask的时候返回 window.etherumn
+    在使用metamask的时候返回 window.ethereum
 
     **param**
 
@@ -182,8 +204,30 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
 
     **returns**
 
-    用户信息
+    用户信息 -->
 
+- ### 其他方法
+    btyEther完全继承于[ethers.js](https://docs.ethers.io/v5/)，所以大部分ethers.js的方法可以通过btyEthers._provider或者btyEthers._contract来进行访问，注意，btyEhters没有相同的signer对象，因为btyEthers是根据用户使用的第三方安全web3插件登录信息来获取signer信息，并不储存signer信息
+
+## Contract
+合约结构体大部分继承，使用了ethers.js中的[Contract](https://docs.ethers.io/v5/api/contract/)模块，对buildSend及相关的模块进行了流程修改来适应btyEther节点的设计，所有Ethers.js支持的Contract方法你可以在getContract()的返回值中获得。
+
+- ### 合约部署
+    **deploy(abi:any,bytecode:any,options?:any)**
+
+    进行合约的部署交易发送
+
+    **param**
+
+    abi:any,合约的abi
+
+    bytecode:any，合约的字节码
+
+    options:any
+
+    **returns**
+    
+    包含合约地址的信息
 - ### 初始化合约对象
     **setContractInstance(contractAddress: string,abi:any)**
 
@@ -215,7 +259,7 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
     
     方法的返回参数
 
-- ### 查看合约地址
+- ### 判断合约地址
     **isContract(contractAddress: string)**
     
     用于查看一个地址是否是合约地址
@@ -231,44 +275,3 @@ BtyEthers的结构体出口文件，整合了大量Ether可用的方法，部分
          data:string|null; //返回blockTag块高的地址的合约代码。如果当前没有部署合约，结果null
       }
     ```
-
-- ### 签名交易
-    **signTransaction(data: string)**
-
-    根据不同的登录方式，对交易数据进行签名
-
-    **param**
-
-    data:string,需要签名的数据
-
-    **returns**
-    签名
-
-
-- ### 合约部署
-    **deploy(abi:any,bytecode:any,options?:any)**
-
-    进行合约的部署交易发送
-
-    **param**
-
-    abi:any,合约的abi
-
-    bytecode:any，合约的字节码
-
-    options:any
-
-    **returns**
-    
-    包含合约地址的信息
-
-
-- ### 其他方法
-    btyEther完全继承于[ethers.js](https://docs.ethers.io/v5/)，所以大部分ethers.js的方法可以通过btyEthers._provider或者btyEthers._contract来进行访问，注意，btyEhters没有相同的signer对象，因为btyEthers是根据用户使用的第三方安全web3插件登录信息来获取signer信息，并不储存signer信息
-
-## Contract
-合约结构体大部分继承，使用了ethers.js中的[Contract](https://docs.ethers.io/v5/api/contract/)模块，对buildSend及相关的模块进行了流程修改来适应btyEther节点的设计，所有Ethers.js支持的Contract方法你可以在getContract()的返回值中获得。
-
-
-## Components
-文件夹存放了部分前端ui tempalte,如’登录框'
